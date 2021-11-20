@@ -10,4 +10,7 @@ export class IssuedToken {
 
   @Column({ nullable: true })
   ownerId?: string
+
+  @Column({ type: 'simple-json' })
+  previousOwners: { ownerId: string, acquiredAt: number }[]
 }

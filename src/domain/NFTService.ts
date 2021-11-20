@@ -13,6 +13,7 @@ interface NFTOutputData {
   uuid: string
   modelId: string
   ownerId?: string
+  previousOwners: { ownerId: string, acquiredAt: number }[]
 }
 
 export enum NFTAcquireStatus {
@@ -46,6 +47,7 @@ export class NFTService {
     const token = new IssuedToken()
     token.uuid = uuid
     token.modelId = data.modelId
+    token.previousOwners = []
     await this.issuedTokenRepository.save(token)
 
     return uuid
@@ -56,14 +58,14 @@ export class NFTService {
     return {
       uuid: token.uuid,
       modelId: token.modelId,
-      ownerId: token.ownerId
+      ownerId: token.ownerId,
+      previousOwners: token.previousOwners
     }
   }
 
   async acquire (user: User, uuid: string): Promise<NFTAcquireResult> {
     const issuedToken = await this.issuedTokenRepository.findOneOrFail(uuid)
     if (issuedToken.ownerId) {
-      // TODO: implement
       return { status: NFTAcquireStatus.needsConfirmationFromOtherUser }
     } else {
       return { status: NFTAcquireStatus.needsConfirmationFromStore }
@@ -77,6 +79,10 @@ export class NFTService {
         throw new Error('The token already has an owner - store manager should not sell it')
       }
       issuedToken.ownerId = requesterId
+      issuedToken.previousOwners.push({
+        ownerId: requesterId,
+        acquiredAt: Math.ceil(new Date().valueOf() / 1000)
+      })
       await this.issuedTokenRepository.save(issuedToken)
     } else if (user.role == UserRole.user) {
       const issuedToken = await this.issuedTokenRepository.findOneOrFail(uuid)
@@ -87,6 +93,10 @@ export class NFTService {
         throw new Error('You are trying to sell an item that does not belong to you')
       }
       issuedToken.ownerId = requesterId
+      issuedToken.previousOwners.push({
+        ownerId: requesterId,
+        acquiredAt: Math.ceil(new Date().valueOf() / 1000)
+      })
       await this.issuedTokenRepository.save(issuedToken)
     }
     return { status: NFTConfirmStatus.success }
