@@ -18,12 +18,12 @@ fastify.register(FastifySwagger, {
 fastify.register(rootRoutesPlugin)
 
 if (require.main === module) {
-  fastify.listen(5050, '0.0.0.0', e => {
+  fastify.listen(5053, '0.0.0.0', e => {
     if (e) {
       console.error(e)
       process.exit(-1)
     } else {
-      fastify.log.info('Server running on 0.0.0.0:5050')
+      fastify.log.info('Server running on 0.0.0.0:5053')
     }
   })
 }
