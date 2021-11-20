@@ -1,4 +1,5 @@
 import Fastify from 'fastify'
+import FastifyCors from 'fastify-cors'
 import FastifySwagger from 'fastify-swagger'
 import 'reflect-metadata'
 import { initializeAsyncContainerDeps } from './inversify.config'
@@ -11,6 +12,7 @@ fastify.register(async () => {
   await initializeAsyncContainerDeps()
 })
 
+fastify.register(FastifyCors)
 fastify.register(FastifySwagger, {
   routePrefix: '/docs',
   exposeRoute: true
